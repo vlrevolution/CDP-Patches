@@ -1,9 +1,9 @@
+import platform
 import random
 import re
 import sys
 import threading
 import time
-import warnings
 from typing import Literal, Optional, Union
 
 if sys.version_info.minor >= 10:
@@ -50,6 +50,9 @@ class SyncInput:
     def __init__(
         self, pid: Optional[int] = None, browser: Optional[sync_browsers] = None, scale_factor: Optional[float] = 1.0, emulate_behaviour: Optional[bool] = True, window_timeout: Optional[float] = 30.0
     ) -> None:
+        if platform.system() not in ('Windows', 'Linux'):
+            raise SystemError("Unknown system (You´re probably using MacOS, which is currently not supported).")
+
         self._scale_factor = scale_factor or self._scale_factor
         self.window_timeout = window_timeout or self.window_timeout
         self.emulate_behaviour = emulate_behaviour or self.emulate_behaviour

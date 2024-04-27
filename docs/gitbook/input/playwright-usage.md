@@ -36,6 +36,7 @@ with sync_playwright() as playwright:
 
 ```python
 import asyncio
+
 from playwright.async_api import async_playwright, Locator
 from cdp_patches.input import AsyncInput
 
@@ -45,8 +46,9 @@ async def get_locator_pos(locator: Locator):
     bounding_box = await locator.bounding_box()
     assert bounding_box
 
-    x, y, width, height = bounding_box.get("x"), bounding_box.get("y"), bounding_box.get("width"), bounding_box.get(
-        "height")
+
+    x, y, width, height = bounding_box.get("x"), bounding_box.get("y"), bounding_box.get("width"), bounding_box.get("height")
+
     assert x and y and width and height
 
     x, y = x + width // 2, y + height // 2
