@@ -130,14 +130,20 @@ class WindowsBase:
     def down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         if not pressed:
             pressed = button
+        if pressed == "__double_click__":
+            pressed = ""
         self.ensure_window()
         self.browser_window.press_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
     def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
+        if pressed == "__double_click__":
+            pressed = ""
         self.ensure_window()
         self.browser_window.release_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
     def move(self, x: int, y: int, pressed: str = "") -> None:
+        if pressed == "__double_click__":
+            pressed = ""
         self.ensure_window()
         self.browser_window.move_mouse(coords=(int(x * self.scale_factor), int(y * self.scale_factor)), pressed=pressed)
 
