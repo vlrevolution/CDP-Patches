@@ -21,6 +21,12 @@ from cdp_patches.input import AsyncInput, SyncInput
 from .server import Server, test_server
 from .utils import find_chrome_executable, random_port
 
+# MYPY Shenanigans
+if os.name != "posix":
+    os.killpg = lambda pid: pid
+    os.getpgid = lambda pid: pid
+    signal.SIGKILL = 9
+
 flags: List[str] = [
     "--incognito",
     "--accept-lang=en-US",
