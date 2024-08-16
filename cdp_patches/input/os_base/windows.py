@@ -2,7 +2,7 @@ import asyncio
 import ctypes
 import re
 import warnings
-from typing import Literal, Union, List
+from typing import List, Literal, Union
 
 from pywinauto import application, timings
 from pywinauto.application import WindowSpecification
@@ -24,7 +24,7 @@ timings.TimeConfig._timings["exists_timeout"] = 0.01
 warnings.filterwarnings("ignore", category=UserWarning, message="32-bit application should be automated using 32-bit Python (you use 64-bit Python)")
 
 
-def get_top_window(app:application.Application, windows=List[Union[WindowSpecification, HwndWrapper]]) -> WindowSpecification:
+def get_top_window(app: application.Application, windows=List[Union[WindowSpecification, HwndWrapper]]) -> WindowSpecification:
     if windows is None:
         windows = app
     # win32_app.top_window(), but without timeout
@@ -127,17 +127,19 @@ class WindowsBase:
 
         return self.browser_window
 
-    def down(self, button: Literal["left", "right", "middle"], x: int, y: int) -> None:
+    def down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
+        if not pressed:
+            pressed = button
         self.ensure_window()
-        self.browser_window.press_mouse(button=button, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
+        self.browser_window.press_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
-    def up(self, button: Literal["left", "right", "middle"], x: int, y: int) -> None:
+    def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
-        self.browser_window.release_mouse(button=button, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
+        self.browser_window.release_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
-    def move(self, x: int, y: int) -> None:
+    def move(self, x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
-        self.browser_window.move_mouse(coords=(int(x * self.scale_factor), int(y * self.scale_factor)), pressed="left")
+        self.browser_window.move_mouse(coords=(int(x * self.scale_factor), int(y * self.scale_factor)), pressed=pressed)
 
     def scroll(self, direction: Literal["up", "down", "left", "right"], amount: int) -> None:
         self.ensure_window()

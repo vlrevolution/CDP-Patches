@@ -13,6 +13,7 @@ else:
 
 from cdp_patches import is_windows
 from cdp_patches.input.exceptions import WindowClosedException
+from cdp_patches.input.utils import _mk_kwargs
 
 if is_windows:
     from pywinauto.application import ProcessNotFoundError
@@ -50,7 +51,7 @@ class SyncInput:
     def __init__(
         self, pid: Optional[int] = None, browser: Optional[sync_browsers] = None, scale_factor: Optional[float] = 1.0, emulate_behaviour: Optional[bool] = True, window_timeout: Optional[float] = 30.0
     ) -> None:
-        if platform.system() not in ('Windows', 'Linux'):
+        if platform.system() not in ("Windows", "Linux"):
             raise SystemError("Unknown system (You´re probably using MacOS, which is currently not supported).")
 
         self._scale_factor = scale_factor or self._scale_factor
@@ -111,41 +112,48 @@ class SyncInput:
         # while time.perf_counter() - start < timeout:
         #     pass
 
-    def click(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = 0.07) -> None:
+    def click(
+        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = 0.07
+    ) -> None:
         x, y = int(x), int(y)
 
-        self.down(button=button, x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout)
+        self.down(button=button, x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout, pressed=pressed)
         if self.emulate_behaviour and emulate_behaviour:
             self._sleep_timeout(timeout=timeout)
-        self.up(button=button, x=x, y=y)
+        self.up(button=button, x=x, y=y, pressed=pressed)
         self.last_x, self.last_y = x, y
 
-    def double_click(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None) -> None:
+    def double_click(
+        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None
+    ) -> None:
         x, y = int(x), int(y)
 
-        self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour)
+        self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed=pressed)
         if emulate_behaviour and self.emulate_behaviour:
             self._sleep_timeout(random.uniform(0.14, 0.21))
             # self._sleep_timeout(timeout=timeout)
-        self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout)
+        self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout, pressed=pressed)
 
         self.last_x, self.last_y = x, y
 
-    def down(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None) -> None:
+    def down(
+        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None
+    ) -> None:
         x, y = int(x), int(y)
 
         if self.emulate_behaviour and emulate_behaviour:
-            self.move(x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout)
-        self._base.down(button=button, x=x, y=y)
+            self.move(x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout, pressed=pressed)
+        self._base.down(button=button, x=x, y=y, **_mk_kwargs(pressed))
         self.last_x, self.last_y = x, y
 
-    def up(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float]) -> None:
+    def up(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "") -> None:
         x, y = int(x), int(y)
 
-        self._base.up(button=button, x=x, y=y)
+        self._base.up(button=button, x=x, y=y, **_mk_kwargs(pressed))
         self.last_x, self.last_y = x, y
 
-    def move(self, x: Union[int, float], y: Union[int, float], emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None) -> None:
+    def move(self, x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None) -> None:
+        kwargs = _mk_kwargs(pressed)
         with self._move_lock:
             x, y = int(x), int(y)
 
@@ -154,10 +162,10 @@ class SyncInput:
 
                 # Move Mouse to new random locations
                 for i, (human_x, human_y) in enumerate(humanized_points.points):
-                    self._base.move(x=int(human_x), y=int(human_y))
+                    self._base.move(x=int(human_x), y=int(human_y), **kwargs)
                     self._sleep_timeout(timeout=timeout)
 
-            self._base.move(x=x, y=y)
+            self._base.move(x=x, y=y, **kwargs)
             self.last_x, self.last_y = x, y
 
     def scroll(self, direction: Literal["up", "down", "left", "right"], amount: int) -> None:
