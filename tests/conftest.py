@@ -21,12 +21,6 @@ from cdp_patches.input import AsyncInput, SyncInput
 from .server import Server, test_server
 from .utils import find_chrome_executable, random_port
 
-# MYPY Shenanigans
-if os.name != "posix":
-    os.killpg = lambda pid: pid
-    os.getpgid = lambda pid: pid
-    signal.SIGKILL = 9
-
 flags: List[str] = [
     "--incognito",
     "--accept-lang=en-US",
@@ -182,13 +176,13 @@ def chrome_proc() -> Generator[subprocess.Popen[bytes], None, None]:
             yield proc
         finally:
             if os.name == "posix":
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)  # type: ignore[attr-defined]
             else:
                 proc.terminate()
             try:
                 proc.wait(10)
             except subprocess.TimeoutExpired:
                 if os.name == "posix":
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)  # type: ignore[attr-defined]
                 else:
                     proc.kill()
