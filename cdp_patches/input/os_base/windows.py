@@ -127,17 +127,17 @@ class WindowsBase:
 
         return self.browser_window
 
-    def down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed:str=None) -> None:
-        if pressed is None:
+    def down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
+        if not pressed:
             pressed = button
         self.ensure_window()
-        self.browser_window.press_mouse(button=button,pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
+        self.browser_window.press_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
-    def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed:str="") -> None:
+    def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
-        self.browser_window.release_mouse(button=button,pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
+        self.browser_window.release_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
-    def move(self, x: int, y: int, pressed:str="") -> None:
+    def move(self, x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
         self.browser_window.move_mouse(coords=(int(x * self.scale_factor), int(y * self.scale_factor)), pressed=pressed)
 

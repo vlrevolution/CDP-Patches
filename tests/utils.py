@@ -1,7 +1,8 @@
 import os
-import sys
 import socket
+import sys
 from contextlib import closing
+from typing import Optional
 
 IS_POSIX = sys.platform.startswith(("darwin", "cygwin", "linux", "linux2"))
 
@@ -18,15 +19,15 @@ def find_chrome_executable() -> str:
     """
     candidates = set()
     if IS_POSIX:
-        for item in os.environ.get("PATH", "").split(os.pathsep):
+        for posix_item in os.environ.get("PATH", "").split(os.pathsep):
             for subitem in (
-                    "google-chrome",
-                    "chromium",
-                    "chromium-browser",
-                    "chrome",
-                    "google-chrome-stable",
+                "google-chrome",
+                "chromium",
+                "chromium-browser",
+                "chrome",
+                "google-chrome-stable",
             ):
-                candidates.add(os.sep.join((item, subitem)))
+                candidates.add(os.sep.join((posix_item, subitem)))
         if "darwin" in sys.platform:
             candidates.update(
                 [
@@ -35,27 +36,25 @@ def find_chrome_executable() -> str:
                 ]
             )
     else:
-        for item in map(
-                os.environ.get,
-                ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA", "PROGRAMW6432"),
+        for windows_item in map(
+            os.environ.get,
+            ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA", "PROGRAMW6432"),
         ):
-            if item is not None:
+            if windows_item is not None:
                 for subitem in (
-                        "Google/Chrome/Application",
-                        "Google/Chrome Beta/Application",
-                        "Google/Chrome Canary/Application",
+                    "Google/Chrome/Application",
+                    "Google/Chrome Beta/Application",
+                    "Google/Chrome Canary/Application",
                 ):
-                    candidates.add(os.sep.join((item, subitem, "chrome.exe")))
+                    candidates.add(os.sep.join((windows_item, subitem, "chrome.exe")))
     for candidate in candidates:
         if os.path.exists(candidate) and os.access(candidate, os.X_OK):
             return os.path.normpath(candidate)
     raise FileNotFoundError("Couldn't find installed Chrome or Chromium executable")
 
 
-def random_port(host: str = None) -> int:
-    if not host:
-        host = ''
+def random_port(host: Optional[str] = "") -> int:
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind((host, 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
+        return int(s.getsockname()[1])

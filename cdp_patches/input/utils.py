@@ -1,8 +1,9 @@
-from typing import Union
+from typing import Optional
+
 from cdp_patches import is_windows
 
 
-def _mk_kwargs(pressed: Union[str, None]) -> dict:
+def _mk_kwargs(pressed: Optional[str]) -> dict[str, str]:
     kwargs = {}
     if pressed is not None:
         if not is_windows:

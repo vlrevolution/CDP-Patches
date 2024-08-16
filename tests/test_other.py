@@ -1,6 +1,8 @@
-import pytest
 import subprocess
-from cdp_patches.input import SyncInput, AsyncInput
+
+import pytest
+
+from cdp_patches.input import AsyncInput, SyncInput
 
 
 def test_raises_from_pid():
@@ -17,11 +19,11 @@ async def test_async_raises_from_pid():
 
 
 @pytest.mark.asyncio
-async def test_async_from_pid(chrome_proc: subprocess.Popen):
+async def test_async_from_pid(chrome_proc: subprocess.Popen[bytes]):
     sync_input = await AsyncInput(pid=chrome_proc.pid, window_timeout=1)
     await sync_input.click("left", 100, 100)
 
 
-def test_sync_from_pid(chrome_proc: subprocess.Popen):
+def test_sync_from_pid(chrome_proc: subprocess.Popen[bytes]):
     sync_input = SyncInput(pid=chrome_proc.pid, window_timeout=1)
     sync_input.click("left", 100, 100)
