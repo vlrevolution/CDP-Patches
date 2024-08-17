@@ -4,11 +4,10 @@ import re
 import warnings
 from typing import List, Literal, Union
 
-from pywinauto import application, timings
+from pywinauto import application, timings, win32defines, win32functions, win32structures
 from pywinauto.application import WindowSpecification
 from pywinauto.base_wrapper import ElementNotVisible
 from pywinauto.controls.hwndwrapper import HwndWrapper, InvalidWindowHandle, _calc_flags_and_coords
-from pywinauto.windows import win32defines, win32functions, win32structures
 
 from cdp_patches.input.exceptions import WindowClosedException
 
