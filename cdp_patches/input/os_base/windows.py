@@ -7,7 +7,8 @@ from typing import List, Literal, Union
 from pywinauto import application, timings
 from pywinauto.application import WindowSpecification
 from pywinauto.base_wrapper import ElementNotVisible
-from pywinauto.controls.hwndwrapper import HwndWrapper, InvalidWindowHandle
+from pywinauto.controls.hwndwrapper import HwndWrapper, InvalidWindowHandle, _calc_flags_and_coords
+from pywinauto.windows import win32defines, win32functions, win32structures
 
 from cdp_patches.input.exceptions import WindowClosedException
 
@@ -130,20 +131,29 @@ class WindowsBase:
     def down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         if not pressed:
             pressed = button
-        if pressed == "__double_click__":
-            pressed = ""
         self.ensure_window()
         self.browser_window.press_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
+    def double_down(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = ""):
+        if not pressed:
+            pressed = button
+        self.ensure_window()
+
+        if button == "left":
+            msg = win32defines.WM_LBUTTONDBLCLK
+        elif button == "right":
+            msg = win32defines.WM_RBUTTONDBLCLK
+        else:
+            msg = win32defines.WM_MBUTTONDBLCLK
+
+        flags, click_point = _calc_flags_and_coords(pressed, [x, y])
+        win32functions.PostMessage(self.browser_window, msg, win32structures.WPARAM(flags), win32structures.LPARAM(click_point))
+
     def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
-        if pressed == "__double_click__":
-            pressed = ""
         self.ensure_window()
         self.browser_window.release_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
     def move(self, x: int, y: int, pressed: str = "") -> None:
-        if pressed == "__double_click__":
-            pressed = ""
         self.ensure_window()
         self.browser_window.move_mouse(coords=(int(x * self.scale_factor), int(y * self.scale_factor)), pressed=pressed)
 

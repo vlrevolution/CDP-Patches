@@ -1,6 +1,7 @@
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 from typing import AsyncGenerator, Generator, List
 
@@ -167,7 +168,12 @@ async def async_driver() -> AsyncGenerator[async_webdriver.Chrome, None]:
 
 @pytest.fixture
 def chrome_proc() -> Generator[subprocess.Popen[bytes], None, None]:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tempdir:
+    if sys.version_info.minor >= 10:
+        options = {"ignore_cleanup_errors": True}
+    else:
+        options = {}
+
+    with tempfile.TemporaryDirectory(**options) as tempdir:  # type: ignore[call-overload]
         path = find_chrome_executable()
         proc = subprocess.Popen([path, f"--remote-debugging-port={random_port()}", f"--user-data-dir={tempdir}", "--no-first-run"])
         try:

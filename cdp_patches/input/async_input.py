@@ -115,11 +115,18 @@ class AsyncInput:
         await asyncio.sleep(timeout)
 
     async def click(
-        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None
+        self,
+        button: Literal["left", "right", "middle"],
+        x: Union[int, float],
+        y: Union[int, float],
+        pressed: str = "",
+        emulate_behaviour: Optional[bool] = True,
+        timeout: Optional[float] = None,
+        double_down: Optional[bool] = False,
     ) -> None:
         x, y = int(x), int(y)
 
-        await self.down(button=button, x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout, pressed=pressed)
+        await self.down(button=button, x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout, pressed=pressed, double_down=double_down)
         if self.emulate_behaviour and emulate_behaviour:
             await self._sleep_timeout(timeout=timeout)
         await self.up(button=button, x=x, y=y, pressed=pressed)
@@ -130,24 +137,34 @@ class AsyncInput:
     ) -> None:
         x, y = int(x), int(y)
 
-        await self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed="__double_click__")
+        await self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed=pressed)
         if self.emulate_behaviour and emulate_behaviour:
             # await self._sleep_timeout(random.uniform(0.14, 0.21))
             # await self._sleep_timeout(timeout=timeout)
             pass
-        await self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout, pressed="__double_click__")
+        await self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout, pressed=pressed, double_down=True)
 
         self.last_x, self.last_y = x, y
 
     async def down(
-        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None
+        self,
+        button: Literal["left", "right", "middle"],
+        x: Union[int, float],
+        y: Union[int, float],
+        pressed: str = "",
+        emulate_behaviour: Optional[bool] = True,
+        timeout: Optional[float] = None,
+        double_down: Optional[bool] = False,
     ) -> None:
         x, y = int(x), int(y)
 
         if self.emulate_behaviour and emulate_behaviour:
             await self.move(x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed=pressed)
         kwargs = _mk_kwargs(pressed)
-        self._base.down(button=button, x=x, y=y, **kwargs)
+        if double_down:
+            self._base.double_down(button=button, x=x, y=y, **kwargs)
+        else:
+            self._base.down(button=button, x=x, y=y, **kwargs)
         self.last_x, self.last_y = x, y
 
     async def up(self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "") -> None:
