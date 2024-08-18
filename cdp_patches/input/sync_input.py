@@ -130,7 +130,7 @@ class SyncInput:
 
         press_timeout = click_timeout = timeout or self.sleep_timeout
         if self.emulate_behaviour and emulate_behaviour:
-            click_timeout = random.uniform(0.14, 0.21)
+            # click_timeout = random.uniform(0.14, 0.21)
             self._base.move(x=x, y=y)
 
         kwargs = _mk_kwargs(pressed)
