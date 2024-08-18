@@ -113,13 +113,7 @@ class SyncInput:
         #     pass
 
     def click(
-        self,
-        button: Literal["left", "right", "middle"],
-        x: Union[int, float],
-        y: Union[int, float],
-        pressed: str = "",
-        emulate_behaviour: Optional[bool] = True,
-        timeout: Optional[float] = 0.07
+        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = 0.07
     ) -> None:
         x, y = int(x), int(y)
 
@@ -134,22 +128,17 @@ class SyncInput:
     ) -> None:
         x, y = int(x), int(y)
 
-        self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed=pressed)
-        if emulate_behaviour and self.emulate_behaviour:
-            # self._sleep_timeout(random.uniform(0.14, 0.21))
-            self._sleep_timeout(timeout=timeout)
-        self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout, pressed=pressed)
+        press_timeout = click_timeout = timeout or self.sleep_timeout
+        if self.emulate_behaviour and emulate_behaviour:
+            click_timeout = random.uniform(0.14, 0.21)
+            self._base.move(x=x, y=y)
 
+        kwargs = _mk_kwargs(pressed)
+        self._base.double_click(button=button, x=x, y=y, press_timeout=press_timeout, click_timeout=click_timeout, **kwargs)
         self.last_x, self.last_y = x, y
 
     def down(
-        self,
-        button: Literal["left", "right", "middle"],
-        x: Union[int, float],
-        y: Union[int, float],
-        pressed: str = "",
-        emulate_behaviour: Optional[bool] = True,
-        timeout: Optional[float] = None
+        self, button: Literal["left", "right", "middle"], x: Union[int, float], y: Union[int, float], pressed: str = "", emulate_behaviour: Optional[bool] = True, timeout: Optional[float] = None
     ) -> None:
         x, y = int(x), int(y)
 
