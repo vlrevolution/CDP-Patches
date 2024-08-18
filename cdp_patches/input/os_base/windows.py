@@ -148,6 +148,9 @@ class WindowsBase:
         flags, click_point = _calc_flags_and_coords(pressed, [x, y])
         win32functions.PostMessage(self.browser_window, msg, win32structures.WPARAM(flags), win32structures.LPARAM(click_point))
 
+        # wait until the thread can accept another message
+        win32functions.WaitGuiThreadIdle(self.browser_window.handle)
+
     def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
         self.browser_window.release_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))

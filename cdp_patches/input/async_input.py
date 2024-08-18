@@ -127,7 +127,7 @@ class AsyncInput:
         x, y = int(x), int(y)
 
         await self.down(button=button, x=x, y=y, emulate_behaviour=emulate_behaviour, timeout=timeout, pressed=pressed, double_down=double_down)
-        if self.emulate_behaviour and emulate_behaviour:
+        if (self.emulate_behaviour and emulate_behaviour) or double_down:
             await self._sleep_timeout(timeout=timeout)
         await self.up(button=button, x=x, y=y, pressed=pressed)
         self.last_x, self.last_y = x, y
@@ -140,8 +140,7 @@ class AsyncInput:
         await self.click(button=button, x=x, y=y, timeout=timeout, emulate_behaviour=emulate_behaviour, pressed=pressed)
         if self.emulate_behaviour and emulate_behaviour:
             # await self._sleep_timeout(random.uniform(0.14, 0.21))
-            # await self._sleep_timeout(timeout=timeout)
-            pass
+            await self._sleep_timeout(timeout=timeout)
         await self.click(button=button, x=x, y=y, emulate_behaviour=False, timeout=timeout, pressed=pressed, double_down=True)
 
         self.last_x, self.last_y = x, y
