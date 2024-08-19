@@ -134,37 +134,29 @@ class WindowsBase:
         self.ensure_window()
         self.browser_window.press_mouse(button=button, pressed=pressed, coords=(int(x * self.scale_factor), int(y * self.scale_factor)))
 
-    def double_click(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "", press_timeout: float = 0.01, click_timeout: float = 0.05) -> None:
+    def double_click(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "", press_timeout: float = 0.01, click_timeout: float = 0.15) -> None:
         if not pressed:
             pressed = button
+        flags, click_point = _calc_flags_and_coords(pressed, [x, y])
 
         self.ensure_window()
 
         if button.lower() == "left":
-            first_click = (win32defines.WM_LBUTTONDOWN, win32defines.WM_LBUTTONUP)
-            second_click = (win32defines.WM_LBUTTONDBLCLK, win32defines.WM_LBUTTONUP)
+            click = (win32defines.WM_LBUTTONDOWN, win32defines.WM_LBUTTONUP)
         elif button.lower() == "right":
-            first_click = (win32defines.WM_RBUTTONDOWN, win32defines.WM_RBUTTONUP)
-            second_click = (win32defines.WM_RBUTTONDBLCLK, win32defines.WM_RBUTTONUP)
+            click = (win32defines.WM_RBUTTONDOWN, win32defines.WM_RBUTTONUP)
         else:
-            first_click = (win32defines.WM_MBUTTONDOWN, win32defines.WM_MBUTTONUP)
-            second_click = (win32defines.WM_MBUTTONDBLCLK, win32defines.WM_MBUTTONUP)
+            click = (win32defines.WM_MBUTTONDOWN, win32defines.WM_MBUTTONUP)
 
         # figure out the flags and pack coordinates
-        flags, click_point = _calc_flags_and_coords(pressed, [x, y])
-        for msg in first_click:
-            win32functions.PostMessage(self.browser_window, msg, win32structures.WPARAM(flags), win32structures.LPARAM(click_point))
-            time.sleep(press_timeout)
-            # wait until the thread can accept another message
-            win32functions.WaitGuiThreadIdle(self.browser_window.handle)
-
-        time.sleep(click_timeout)
-
-        for msg in second_click:
-            win32functions.PostMessage(self.browser_window, msg, win32structures.WPARAM(flags), win32structures.LPARAM(click_point))
-            time.sleep(press_timeout)
-            # wait until the thread can accept another message
-            win32functions.WaitGuiThreadIdle(self.browser_window.handle)
+        for i in range(2):
+            for msg in click:
+                win32functions.PostMessage(self.browser_window, msg, win32structures.WPARAM(flags), win32structures.LPARAM(click_point))
+                time.sleep(press_timeout)
+                # wait until the thread can accept another message
+                win32functions.WaitGuiThreadIdle(self.browser_window.handle)
+            if not i:
+                time.sleep(click_timeout)
 
     def up(self, button: Literal["left", "right", "middle"], x: int, y: int, pressed: str = "") -> None:
         self.ensure_window()
